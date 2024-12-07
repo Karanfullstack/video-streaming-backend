@@ -1,0 +1,9 @@
+get user detials from frontend
+validation
+check if user is already exists example email or username
+check for images, avatar
+upload to cloudinary or aws s3 bucket
+create user object or save into database
+eliminate password and refresh token from response
+verify for user creation
+return final response
