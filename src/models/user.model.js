@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
-import { CONFIG } from "../config";
+import { CONFIG } from "../config/index.js";
 
 const userSchema = new Schema(
     {
@@ -76,4 +76,5 @@ userSchema.methods = {
         });
     },
 };
-export default User = model("User", userSchema);
+const User = model("User", userSchema);
+export default User;
