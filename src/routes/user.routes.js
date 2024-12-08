@@ -12,7 +12,7 @@ router.post(
             maxCount: 1,
         },
         {
-            name: "coverImage",
+            name: "coverPath",
             maxCount: 1,
         },
     ]),
