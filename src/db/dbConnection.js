@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import { CONFIG } from "../config/index.js";
 const connect = async () => {
     mongoose
-        .connect(`${process.env.MONGO_URI}`)
+        .connect(`${CONFIG.MONGO_URI}`)
         .then(() => {
             console.log("Databse is connected");
         })
