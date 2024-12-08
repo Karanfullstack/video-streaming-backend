@@ -8,6 +8,7 @@ export const asynHandler = (reuestHandler) => {
             res.status(statusCode).json({
                 success: false,
                 error: errorMessage,
+                stack: process.env.NODE_ENV === "dev" ? error.stack : null,
             });
         }
     };

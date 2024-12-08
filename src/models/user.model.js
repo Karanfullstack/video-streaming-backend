@@ -32,10 +32,16 @@ const userSchema = new Schema(
             trim: true,
         },
         avatar: {
-            type: String,
+            type: {
+                public_id: String,
+                url: String,
+            },
         },
         coverImage: {
-            type: String,
+            type: {
+                public_id: String,
+                url: String,
+            },
         },
         watchHistory: {
             type: String,
