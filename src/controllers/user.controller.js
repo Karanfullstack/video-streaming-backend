@@ -19,37 +19,37 @@ export const registerUser = asynHandler(async (req, res) => {
     });
 
     if (isUserExists) {
-        // if (fs.existsSync(req.files?.avatar[0]?.path)) {
-        //     fs.unlinkSync(req.files?.avatar[0]?.path);
-        // }
-        // if (fs.existsSync(req.files?.coverPath[0]?.path)) {
-        //     fs.unlinkSync(req.files?.coverPath[0]?.path);
-        // }
+        if (fs.existsSync(req.files?.avatar[0]?.path)) {
+            fs.unlinkSync(req.files?.avatar[0]?.path);
+        }
+        if (fs.existsSync(req.files?.coverPath[0]?.path)) {
+            fs.unlinkSync(req.files?.coverPath[0]?.path);
+        }
         throw new HttpError(403, " user is already exists");
     }
 
-    // let localCoverPath;
-    // if (
-    //     req.files &&
-    //     Array.isArray(req.files.coverPath) &&
-    //     req.files.coverPath.length > 0
-    // ) {
-    //     localCoverPath = req.files.coverPath[0].path;
-    // }
-    // const localAvatarPath = req.files?.avatar[0]?.path;
+    let localCoverPath;
+    if (
+        req.files &&
+        Array.isArray(req.files.coverPath) &&
+        req.files.coverPath.length > 0
+    ) {
+        localCoverPath = req.files.coverPath[0].path;
+    }
+    const localAvatarPath = req.files?.avatar[0]?.path;
 
-    // if (!localAvatarPath) throw new HttpError(400, "Avatar is required");
+    if (!localAvatarPath) throw new HttpError(400, "Avatar is required");
 
     // Upolad to cloudinary
 
-    // const avatar = await uploadToCloudinary(localAvatarPath).catch((error) =>
-    //     console.log(error),
-    // );
-    // if (!avatar) throw new HttpError(400, "Avatar file is required!!");
+    const avatar = await uploadToCloudinary(localAvatarPath).catch((error) =>
+        console.log(error),
+    );
+    if (!avatar) throw new HttpError(400, "Avatar file is required!!");
 
-    // const coverImage = await uploadToCloudinary(localCoverPath).catch((error) =>
-    //     console.log(error),
-    // );
+    const coverImage = await uploadToCloudinary(localCoverPath).catch((error) =>
+        console.log(error),
+    );
 
     // Save user data into database
     const user = await User.create({
@@ -60,8 +60,8 @@ export const registerUser = asynHandler(async (req, res) => {
             url: "",
         },
         coverImage: {
-            public_id:  "",
-            url:  "",
+            public_id: "",
+            url: "",
         },
         email,
         username: username.toLowerCase(),
