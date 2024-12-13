@@ -5,7 +5,11 @@ import { uploadToCloudinary } from "../utils/cloudinary.js";
 import fs from "fs";
 
 export const registerUser = asynHandler(async (req, res) => {
-  const { username, email, firstName, lastName, password } = req.body;
+  const { username, email, firstName, lastName, password,  } = req.body;
+ 
+  console.log("res====>",req?.body,"res====>");
+  
+   // Check for required fields
   if (
     [username, email, firstName, lastName, password].some(
       (value) => value.trim() === ""
@@ -13,7 +17,7 @@ export const registerUser = asynHandler(async (req, res) => {
   ) {
     throw new HttpError(400, "All fields are required!");
   }
-
+  // Check if user already exists
   const isUserExists = await User.findOne({
     $or: [{ username }, { email }],
   });
