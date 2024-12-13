@@ -7,7 +7,7 @@ import fs from "fs";
 export const registerUser = asynHandler(async (req, res) => {
   const { username, email, firstName, lastName, password,  } = req.body;
  
-  console.log("res====>",req?.body,"res====>");
+  console.log("res====>",req.body,"res====>");
   
    // Check for required fields
   if (
