@@ -18,6 +18,7 @@ app.get("/", (_req, res) => {
     res.send("<h1>Health Check</h1");
 });
 
+
 app.use("/api/v1", userRouter);
 
 export default app;
