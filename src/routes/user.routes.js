@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/user.controller.js";
+import { loginUser, registerUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 
 const router = Router();
 
+// @Register Route
 router.post(
     "/register",
     upload.fields([
@@ -18,5 +19,8 @@ router.post(
     ]),
     registerUser,
 );
+
+// @Login Route
+router.get("/login", loginUser);
 
 export default router;
