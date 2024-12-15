@@ -52,8 +52,8 @@ const registerUser = asynHandler(async (req, res) => {
             url: avatar.secure_url,
         },
         coverImage: {
-            public_id: coverImage.public_id || "",
-            url: coverImage.secure_url || "",
+            public_id: coverImage?.public_id || "",
+            url: coverImage?.secure_url || "",
         },
         email,
         username: username.toLowerCase(),
@@ -73,13 +73,11 @@ const registerUser = asynHandler(async (req, res) => {
 
 // @Login User End Point
 const loginUser = asynHandler(async (req, res) => {
-    // get data from user
-    // username and password
-    // find user in db
-    // access and refreshToken
-    // send tokens to cookies
     const { email, username, password } = req.body;
 
+    if (!(email || username)) {
+        throw new HttpError(401, "User or email is required");
+    }
     const user = await User.findOne({
         $or: [{ email }, { username }],
     });
