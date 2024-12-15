@@ -3,14 +3,12 @@ import HttpError from "../utils/ApiError.js";
 import { asynHandler } from "../utils/asyncHandler.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import fs from "fs";
+import { generateAccessAndRefreshToken } from "../utils/generateTokens.js";
 
-export const registerUser = asynHandler(async (req, res) => {
+// @Create User End Point
+const registerUser = asynHandler(async (req, res) => {
     const { username, email, firstName, lastName, password } = req.body;
-    if (
-        [username, email, firstName, lastName, password].some(
-            (value) => value.trim() === "",
-        )
-    ) {
+    if ([username, email, firstName, lastName, password].some((value) => value.trim() === "")) {
         throw new HttpError(400, "All fields are required!");
     }
 
@@ -29,11 +27,7 @@ export const registerUser = asynHandler(async (req, res) => {
     }
 
     let localCoverPath;
-    if (
-        req.files &&
-        Array.isArray(req.files.coverPath) &&
-        req.files.coverPath.length > 0
-    ) {
+    if (req.files && Array.isArray(req.files.coverPath) && req.files.coverPath.length > 0) {
         localCoverPath = req.files.coverPath[0].path;
     }
     const localAvatarPath = req.files?.avatar[0]?.path;
@@ -42,9 +36,7 @@ export const registerUser = asynHandler(async (req, res) => {
 
     // Upolad to cloudinary
 
-    const avatar = await uploadToCloudinary(localAvatarPath).catch((error) =>
-        console.log(error),
-    );
+    const avatar = await uploadToCloudinary(localAvatarPath).catch((error) => console.log(error));
     if (!avatar) throw new HttpError(400, "Avatar file is required!!");
 
     const coverImage = await uploadToCloudinary(localCoverPath).catch((error) =>
@@ -56,21 +48,19 @@ export const registerUser = asynHandler(async (req, res) => {
         firstName,
         lastName,
         avatar: {
-            public_id: "avatar.public_id",
-            url: "",
+            public_id: avatar.public_id,
+            url: avatar.secure_url,
         },
         coverImage: {
-            public_id: "",
-            url: "",
+            public_id: coverImage.public_id || "",
+            url: coverImage.secure_url || "",
         },
         email,
         username: username.toLowerCase(),
         password,
     });
 
-    const createdUser = await User.findById(user._id).select(
-        "-password -refreshToken -__v",
-    );
+    const createdUser = await User.findById(user._id).select("-password -refreshToken -__v");
 
     if (!createdUser) throw new HttpError(500, "User registration failed");
 
@@ -80,3 +70,49 @@ export const registerUser = asynHandler(async (req, res) => {
         message: "user registred successfully",
     });
 });
+
+// @Login User End Point
+const loginUser = asynHandler(async (req, res) => {
+    // get data from user
+    // username and password
+    // find user in db
+    // access and refreshToken
+    // send tokens to cookies
+    const { email, username, password } = req.body;
+
+    const user = await User.findOne({
+        $or: [{ email }, { username }],
+    });
+
+    if (!user) {
+        throw new HttpError(404, "Email or Usrname is incorrect.");
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+        throw new HttpError(401, "Invalid user credentials");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+    const loggedInuser = await User.findById(user._id).select(" -password -refreshToken");
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json({
+            success: true,
+            data: loggedInuser,
+            accessToken,
+            refreshToken,
+        });
+});
+
+export { loginUser, registerUser };
