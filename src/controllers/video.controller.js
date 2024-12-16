@@ -1,7 +1,7 @@
-import { asynHandler } from "../utils/asyncHandler";
-import HttpError from "../utils/ApiError";
-import { uploadToCloudinary } from "../utils/cloudinary";
-import { Video } from "../models/video.model";
+import { asynHandler } from "../utils/asyncHandler.js";
+import HttpError from "../utils/ApiError.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { Video } from "../models/video.model.js";
 
 const uploadVideo = asynHandler(async (req, res) => {
     const { title, description } = req.body;
