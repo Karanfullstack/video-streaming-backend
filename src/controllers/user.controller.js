@@ -113,4 +113,14 @@ const loginUser = asynHandler(async (req, res) => {
         });
 });
 
-export { loginUser, registerUser };
+// @Get Current User End Point
+const self = asynHandler(async (req, res) => {
+    const user = req.user;
+    return res.status(200).json({
+        success: true,
+        data: user,
+        message: "current user fetched successfully",
+    });
+});
+
+export { loginUser, registerUser, self };

@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { loginUser, registerUser } from "../controllers/user.controller.js";
+import { loginUser, registerUser, self } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const router = Router();
 
@@ -22,5 +23,8 @@ router.post(
 
 // @Login Route
 router.get("/login", loginUser);
+
+// @Sef Route
+router.get("/self", authenticate, self);
 
 export default router;

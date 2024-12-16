@@ -17,7 +17,7 @@ const uploadToCloudinary = async (localpath) => {
             resource_type: "auto",
             folder: "avatar",
         });
-        console.log(result);
+
         fs.unlinkSync(localpath);
         return result;
     } catch (error) {
