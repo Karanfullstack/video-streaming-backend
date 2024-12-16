@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
+import videoRouter from "./routes/vidoe.routes.js";
 import cors from "cors";
 const app = new express();
 
@@ -19,5 +20,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/v1", userRouter);
+app.use("/api/v1", videoRouter);
 
 export default app;
