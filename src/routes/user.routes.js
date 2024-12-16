@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginUser, registerUser, self } from "../controllers/user.controller.js";
+import { loginUser, logoutUser, registerUser, self } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { authenticate } from "../middlewares/authenticate.js";
 
@@ -24,7 +24,10 @@ router.post(
 // @Login Route
 router.get("/login", loginUser);
 
-// @Sef Route
+// @Self Route
 router.get("/self", authenticate, self);
+
+// @Logout Route
+router.post("/logout", authenticate, logoutUser);
 
 export default router;
