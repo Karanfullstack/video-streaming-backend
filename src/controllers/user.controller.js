@@ -4,8 +4,12 @@ import { asynHandler } from "../utils/asyncHandler.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import fs from "fs";
 import { generateAccessAndRefreshToken } from "../utils/generateTokens.js";
+<<<<<<< HEAD
 import { cookiesOptions } from "../const/index.js";
 
+=======
+import { cookieOptions } from "../const/index.js";
+>>>>>>> 53c1e9f0a97bccbc9a3f18ce1af31dd39cb8546a
 // @Create User End Point
 const registerUser = asynHandler(async (req, res) => {
   const { username, email, firstName, lastName, password } = req.body;
@@ -122,6 +126,7 @@ const loginUser = asynHandler(async (req, res) => {
       accessToken,
       refreshToken,
     });
+<<<<<<< HEAD
 });
 
 //@Get Current User End Point
@@ -145,4 +150,56 @@ const logoutUser = asynHandler(async (req, res) => {
     .json({ success: true, message: "User has been logged out Successfully" });
 });
 
+=======
+
+    if (!user) {
+        throw new HttpError(404, "Email or Usrname is incorrect.");
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+        throw new HttpError(401, "Invalid user credentials");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+    const loggedInuser = await User.findById(user._id).select(" -password -refreshToken");
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
+        .json({
+            success: true,
+            data: loggedInuser,
+            accessToken,
+            refreshToken,
+        });
+});
+
+// @Get Current User End Point
+const self = asynHandler(async (req, res) => {
+    const user = req.user;
+    return res.status(200).json({
+        success: true,
+        data: user,
+        message: "current user fetched successfully",
+    });
+});
+
+// @Logout User
+const logoutUser = asynHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id, {
+        $unset: { refreshToken: 1 },
+    });
+    return res
+        .status(200)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
+        .json({ success: true, message: "User logout sucessfully" });
+});
+
+
+
+>>>>>>> 53c1e9f0a97bccbc9a3f18ce1af31dd39cb8546a
 export { loginUser, registerUser, self, logoutUser };

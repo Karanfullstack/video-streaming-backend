@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginUser, logoutUser, registerUser, self } from "../controllers/user.controller.js";
+import { loginUser, logoutUser, registerUser, self } from "../controllers/video.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { authenticate } from "../middlewares/authenticate.js";
 
