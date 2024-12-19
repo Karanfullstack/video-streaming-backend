@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { CONFIG } from "../config/index.js";
+
 const connect = async () => {
     mongoose
         .connect(`${CONFIG.MONGO_URI}`)
