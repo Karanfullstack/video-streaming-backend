@@ -4,7 +4,7 @@ import { asynHandler } from "../utils/asyncHandler.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import fs from "fs";
 import { generateAccessAndRefreshToken } from "../utils/generateTokens.js";
-
+import { cookieOptions } from "../const/index.js";
 // @Create User End Point
 const registerUser = asynHandler(async (req, res) => {
     const { username, email, firstName, lastName, password } = req.body;
@@ -95,16 +95,10 @@ const loginUser = asynHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
     const loggedInuser = await User.findById(user._id).select(" -password -refreshToken");
 
-    const options = {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-    };
-
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
         .json({
             success: true,
             data: loggedInuser,
@@ -113,4 +107,28 @@ const loginUser = asynHandler(async (req, res) => {
         });
 });
 
-export { loginUser, registerUser };
+// @Get Current User End Point
+const self = asynHandler(async (req, res) => {
+    const user = req.user;
+    return res.status(200).json({
+        success: true,
+        data: user,
+        message: "current user fetched successfully",
+    });
+});
+
+// @Logout User
+const logoutUser = asynHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user._id, {
+        $unset: { refreshToken: 1 },
+    });
+    return res
+        .status(200)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
+        .json({ success: true, message: "User logout sucessfully" });
+});
+
+
+
+export { loginUser, registerUser, self, logoutUser };
