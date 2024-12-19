@@ -1,134 +1,74 @@
-import User from "../models/user.model.js";
-import HttpError from "../utils/ApiError.js";
 import { asynHandler } from "../utils/asyncHandler.js";
-import { uploadToCloudinary } from "../utils/cloudinary.js";
-import fs from "fs";
-import { generateAccessAndRefreshToken } from "../utils/generateTokens.js";
-import { cookieOptions } from "../const/index.js";
-// @Create User End Point
-const registerUser = asynHandler(async (req, res) => {
-    const { username, email, firstName, lastName, password } = req.body;
-    if ([username, email, firstName, lastName, password].some((value) => value.trim() === "")) {
-        throw new HttpError(400, "All fields are required!");
+import HttpError from "../utils/ApiError.js";
+import User from "../models/user.model.js";
+
+const getCannel = asynHandler(async (req, res) => {
+    const { username } = req.params;
+    if (!username.trim()) {
+        throw new HttpError(400, "channel name is missing.");
     }
-
-    const isUserExists = await User.findOne({
-        $or: [{ username }, { email }],
-    });
-
-    if (isUserExists) {
-        if (fs.existsSync(req.files?.avatar[0]?.path)) {
-            fs.unlinkSync(req.files?.avatar[0]?.path);
-        }
-        if (fs.existsSync(req.files?.coverPath[0]?.path)) {
-            fs.unlinkSync(req.files?.coverPath[0]?.path);
-        }
-        throw new HttpError(403, " user is already exists");
-    }
-
-    let localCoverPath;
-    if (req.files && Array.isArray(req.files.coverPath) && req.files.coverPath.length > 0) {
-        localCoverPath = req.files.coverPath[0].path;
-    }
-    const localAvatarPath = req.files?.avatar[0]?.path;
-
-    if (!localAvatarPath) throw new HttpError(400, "Avatar is required");
-
-    // Upolad to cloudinary
-
-    const avatar = await uploadToCloudinary(localAvatarPath).catch((error) => console.log(error));
-    if (!avatar) throw new HttpError(400, "Avatar file is required!!");
-
-    const coverImage = await uploadToCloudinary(localCoverPath).catch((error) =>
-        console.log(error),
-    );
-
-    // Save user data into database
-    const user = await User.create({
-        firstName,
-        lastName,
-        avatar: {
-            public_id: avatar.public_id,
-            url: avatar.secure_url,
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase(),
+            },
         },
-        coverImage: {
-            public_id: coverImage?.public_id || "",
-            url: coverImage?.secure_url || "",
+
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers",
+            },
         },
-        email,
-        username: username.toLowerCase(),
-        password,
-    });
 
-    const createdUser = await User.findById(user._id).select("-password -refreshToken -__v");
-
-    if (!createdUser) throw new HttpError(500, "User registration failed");
-
-    return res.status(201).json({
-        success: true,
-        data: createdUser,
-        message: "user registred successfully",
-    });
-});
-
-// @Login User End Point
-const loginUser = asynHandler(async (req, res) => {
-    const { email, username, password } = req.body;
-
-    if (!(email || username)) {
-        throw new HttpError(401, "User or email is required");
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribed",
+            },
+        },
+        {
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscribers",
+                },
+                subscribedCount: {
+                    $size: "$subscribed",
+                },
+                fullName: {
+                    $concat: ["$firstName", " ", "$lastName"],
+                },
+                isFollow: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        then: true,
+                        else: false,
+                    },
+                },
+            },
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                email: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                subscribedCount: 1,
+                isFollow: 1,
+            },
+        },
+    ]);
+    if (!channel?.length) {
+        throw new HttpError(404, "channel doesn not exist");
     }
-    const user = await User.findOne({
-        $or: [{ email }, { username }],
-    });
 
-    if (!user) {
-        throw new HttpError(404, "Email or Usrname is incorrect.");
-    }
-
-    const isMatch = await user.comparePassword(password);
-
-    if (!isMatch) {
-        throw new HttpError(401, "Invalid user credentials");
-    }
-
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-    const loggedInuser = await User.findById(user._id).select(" -password -refreshToken");
-
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, cookieOptions)
-        .cookie("refreshToken", refreshToken, cookieOptions)
-        .json({
-            success: true,
-            data: loggedInuser,
-            accessToken,
-            refreshToken,
-        });
+    return res.status(200).json({ success: true, data: channel[0] });
 });
 
-// @Get Current User End Point
-const self = asynHandler(async (req, res) => {
-    const user = req.user;
-    return res.status(200).json({
-        success: true,
-        data: user,
-        message: "current user fetched successfully",
-    });
-});
-
-// @Logout User
-const logoutUser = asynHandler(async (req, res) => {
-    await User.findByIdAndUpdate(req.user._id, {
-        $unset: { refreshToken: 1 },
-    });
-    return res
-        .status(200)
-        .clearCookie("accessToken", cookieOptions)
-        .clearCookie("refreshToken", cookieOptions)
-        .json({ success: true, message: "User logout sucessfully" });
-});
-
-
-
-export { loginUser, registerUser, self, logoutUser };
+export { getCannel };

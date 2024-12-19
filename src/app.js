@@ -1,7 +1,8 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import userRouter from "./routes/user.routes.js";
+import userRouter from "./routes/auth.routes.js";
 import videoRouter from "./routes/vidoe.routes.js";
+import channelRouter from "./routes/user.routes.js";
 import cors from "cors";
 const app = new express();
 
@@ -21,5 +22,6 @@ app.get("/", (_req, res) => {
 
 app.use("/api/v1", userRouter);
 app.use("/api/v1", videoRouter);
+app.use("/api/v1", channelRouter);
 
 export default app;
