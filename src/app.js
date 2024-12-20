@@ -1,8 +1,8 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import userRouter from "./routes/auth.routes.js";
+import authRouter from "./routes/auth.routes.js";
 import videoRouter from "./routes/vidoe.routes.js";
-import channelRouter from "./routes/user.routes.js";
+import userRouter from "./routes/user.routes.js";
 import cors from "cors";
 const app = new express();
 
@@ -20,8 +20,8 @@ app.get("/", (_req, res) => {
     res.send("<h1>Health Check</h1");
 });
 
-app.use("/api/v1", userRouter);
-app.use("/api/v1", videoRouter);
-app.use("/api/v1", channelRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/video", videoRouter);
+app.use("/api/user", userRouter);
 
 export default app;

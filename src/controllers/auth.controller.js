@@ -20,9 +20,12 @@ const registerUser = asynHandler(async (req, res) => {
         if (fs.existsSync(req.files?.avatar[0]?.path)) {
             fs.unlinkSync(req.files?.avatar[0]?.path);
         }
-        if (fs.existsSync(req.files?.coverPath[0]?.path)) {
-            fs.unlinkSync(req.files?.coverPath[0]?.path);
+        if (req.files && req.files?.coverPath) {
+            if (fs.existsSync(req.files?.coverPath[0]?.path)) {
+                fs.unlinkSync(req.files?.coverPath[0]?.path);
+            }
         }
+
         throw new HttpError(403, " user is already exists");
     }
 
