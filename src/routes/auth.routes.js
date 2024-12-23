@@ -22,7 +22,7 @@ router.post(
 );
 
 // @Login Route
-router.get("/login", loginUser);
+router.post("/login", loginUser);
 
 // @Self Route
 router.get("/self", authenticate, self);
